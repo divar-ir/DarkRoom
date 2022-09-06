@@ -21,7 +21,7 @@ Elegant Media Viewer Written In Swift.
 - [x] Support Custom Configuration For Almost Each Component.
 - [x] Support HLS And Local Videos.
 - [x] Documented By DocC.
-- [ ] Support UserDefined `AVAssetResourceLoaderDelegate`.
+- [ ] Support `AVAssetResourceLoaderDelegate`.
 
 
 ## Requirements
