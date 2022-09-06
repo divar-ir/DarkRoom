@@ -2,7 +2,7 @@
 
 [![Swift](https://img.shields.io/badge/Swift-5.6_or_Higher-orange?style=flat-square)](https://img.shields.io/badge/Swift-5.6-Orange?style=flat-square)
 [![Platforms](https://img.shields.io/badge/Platforms-iOS_13_or_Higher-yellowgreen?style=flat-square)](https://img.shields.io/badge/Platforms-macOS_iOS_tvOS_watchOS_Linux_Windows-Green?style=flat-square)
-[![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)]
+[![Swift Package Manager](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)](https://img.shields.io/badge/Swift_Package_Manager-compatible-orange?style=flat-square)
 
 Elegant Media Viewer Written In Swift.
 
