@@ -1,8 +1,5 @@
 # DarkRoom
 
-[![Swift](https://img.shields.io/badge/Swift-5.6_or_Higher-orange?style=flat-square)](https://img.shields.io/badge/Swift-5.6-Orange?style=flat-square)
-[![Platforms](https://img.shields.io/badge/Platforms-iOS_13_or_Higher-yellowgreen?style=flat-square)](https://img.shields.io/badge/Platforms-macOS_iOS_tvOS_watchOS_Linux_Windows-Green?style=flat-square)
-
 Elegant Media Viewer Written In Swift.
 
 - [Features](#features)
@@ -43,7 +40,7 @@ dependencies: [
 ]
 ```
 
-## sample
+## Sample
 
 We have provided one sample project in the repository. To use it clone the repo, Source files for these are in the `iOS-Example` directory in project navigator. Have fun!
 
