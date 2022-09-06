@@ -1,0 +1,33 @@
+name: shared_workflow
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runsOn }}
+    env:
+      DEVELOPER_DIR: "/Applications/${{ matrix.xcode }}/Contents/Developer"
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: Build On ${{ matrix.name }}
+      continue-on-error: false
+      run: |
+        xcodebuild -scheme DarkRoom -destination '${{ matrix.destination }}' build
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - destination: 'platform=iOS Simulator,name=iPhone 13'
+            runsOn: macos-12
+            xcode: "Xcode_13.4.1.app"
+            name: "iPhone 13, iOS Latest, Xcode 13.4.1"
