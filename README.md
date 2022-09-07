@@ -1,3 +1,8 @@
+
+<p align="center">
+  <img src="https://github.com/kiarashvosough1999/CocoAttributedStringBuilder/blob/pre-release-issues/Sources/Documentation.docc/Resources/DarkRoomLogo.png">
+</p>
+
 # DarkRoom
 
 [![Swift](https://img.shields.io/badge/Swift-5.6_or_Higher-orange?style=flat-square)](https://img.shields.io/badge/Swift-5.6-Orange?style=flat-square)
@@ -26,9 +31,9 @@ Elegant Media Viewer Written In Swift.
 
 ## Requirements
 
-| Platform | Minimum Swift Version | Installation | Status |
+| Platform | Minimum Swift Version | Minimum Swift Tools Version | Installation | Status |
 | --- | --- | --- | --- |
-| iOS 13.0+ | 5.6 | [SPM](#SwiftPackageManager) | Tested |
+| iOS 15.4+ | 5.6 | 5.5 | [SPM](#SwiftPackageManager) | Tested |
 
 ## Installation
 
@@ -54,7 +59,7 @@ The Main Component is ``DarkRoomCarousel`` which you can use and provide it with
 
 > Do not forget to create your own strategy of loading images by implementing ``DarkRoomImageLoader`` and passing it to ``DarkRoomCarousel`` initializer.
 
-> In case you are using CollectionView to open ``DarkRoomCarousel``, consider providing `initialIndex`, or the datasource will request for wrong data and casuses undefined behaviors.
+> In case you are using CollectionView to open ``DarkRoomCarousel`` and the datasource is shared, consider providing `initialIndex`, or the datasource will request for wrong data and causes undefined behaviors.
 
 ```swift
 let carouselController = DarkRoomCarouselViewController(
