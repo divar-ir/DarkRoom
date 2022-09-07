@@ -32,7 +32,7 @@ Elegant Media Viewer Written In Swift.
 ## Requirements
 
 | Platform | Minimum Swift Version | Minimum Swift Tools Version | Installation | Status |
-| --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |
 | iOS 15.4+ | 5.6 | 5.5 | [SPM](#SwiftPackageManager) | Tested |
 
 ## Installation
