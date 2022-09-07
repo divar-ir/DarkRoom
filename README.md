@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://github.com/kiarashvosough1999/CocoAttributedStringBuilder/blob/pre-release-issues/Sources/DarkRoom.docc/Resources/DarkRoomLogo.png">
+  <img src="https://github.com/divar-ir/DarkRoom/blob/pre-release-issues/Sources/DarkRoom/DarkRoom.docc/Resources/DarkRoomLogo.png">
 </p>
 
 # DarkRoom
