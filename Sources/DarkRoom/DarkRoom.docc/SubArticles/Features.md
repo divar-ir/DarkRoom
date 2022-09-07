@@ -15,3 +15,4 @@ All previous and new features are listed here. Community can also add new featur
 
 - Support `AVAssetResourceLoaderDelegate`.
 - Support `CocoaPods`
+- Support `Carthage`

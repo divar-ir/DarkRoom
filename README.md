@@ -27,6 +27,8 @@ Elegant Media Viewer Written In Swift.
 - [x] Support HLS And Local Videos.
 - [x] Documented By DocC.
 - [ ] Support `AVAssetResourceLoaderDelegate`.
+- [ ] Support `CocoaPods`
+- [ ] Support `Carthage`
 
 
 ## Requirements
