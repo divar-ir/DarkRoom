@@ -134,6 +134,8 @@ xcuserdata
 
 ### SwiftPM ###
 
+.swiftpm/
+
 
 ### Xcode ###
 
