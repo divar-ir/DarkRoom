@@ -1,4 +1,4 @@
-// swift-tools-version:5.4
+// swift-tools-version:5.5
 import PackageDescription
 
 let package = Package(
@@ -16,10 +16,7 @@ let package = Package(
 		.target(
 			name: "DarkRoom",
             dependencies: [],
-            path: "Sources",
-            linkerSettings: [
-                .linkedFramework("UIKit")
-            ]
+            path: "Sources"
         )
 	]
 )
