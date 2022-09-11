@@ -5,8 +5,8 @@ All previous and new features are listed here. Community can also add new featur
 
 ### Available Features
 
-- View Image With Showy Animations.
-- Play Video With Custom Control, etc.
+- Presenting/Dismissing Images And Videos With Showy Animations.
+- Play Video With Custom Control Configuration.
 - Support Custom Configuration For Almost Each Component.
 - Support HLS And Local Videos.
 - Documented By DocC.

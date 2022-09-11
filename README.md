@@ -21,8 +21,8 @@ Elegant Media Viewer Written In Swift.
 
 ## Features
 
-- [x] View Image With Showy Animations.
-- [x] Play Video With Custom Control, etc.
+- [x] Presenting/Dismissing Images And Videos With Showy Animations.
+- [x] Play Video With Custom Control Configuration.
 - [x] Support Custom Configuration For Almost Each Component.
 - [x] Support HLS And Local Videos.
 - [x] Documented By DocC.
