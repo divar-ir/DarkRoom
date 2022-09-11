@@ -57,11 +57,11 @@ We have provided one sample project in the repository. To use it clone the repo,
 
 ## Usage
 
-The Main Component is ``DarkRoomCarousel`` which you can use and provide it with datasource to show images or play videos.
+The Main Component is ``DarkRoomCarouselViewController`` which you can use and provide it with datasource to show images or play videos.
 
-> Do not forget to create your own strategy of loading images by implementing ``DarkRoomImageLoader`` and passing it to ``DarkRoomCarousel`` initializer.
+> Do not forget to create your own strategy of loading images by implementing ``DarkRoomImageLoader`` and passing it to ``DarkRoomCarouselViewController`` initializer.
 
-> In case you are using CollectionView to open ``DarkRoomCarousel`` and the datasource is shared, consider providing `initialIndex`, or the datasource will request for wrong data and causes undefined behaviors.
+> In case you are using CollectionView to open ``DarkRoomCarouselViewController`` and the datasource is shared, consider providing `initialIndex`, or the datasource will request for wrong data and causes undefined behaviors.
 
 ```swift
 let carouselController = DarkRoomCarouselViewController(
