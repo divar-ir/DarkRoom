@@ -31,3 +31,30 @@ jobs:
             runsOn: macos-12
             xcode: "Xcode_13.4.1.app"
             name: "iPhone 13, iOS Latest, Xcode 13.4.1"
+  
+  build-docc:
+    needs: build
+    runs-on: macos-12
+    steps:
+    - name: checkout
+      uses: actions/checkout@v3
+      with:
+       repository: ${{ github.event.pull_request.head.repo.full_name }}
+       ref: ${{ github.event.pull_request.head.ref }}
+
+    - name: build static site
+      uses: kiarashvosough1999/build-docC-static-site@v1.0.1
+
+  deploy-site-github-pages:
+    needs: build-docc
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      contents: read
+      id-token: write
+    steps:
+    - name: deploy static site
+      uses: kiarashvosough1999/docC-github-pages-deploy@v1.0.0
