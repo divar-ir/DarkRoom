@@ -1,4 +1,4 @@
-name: master_development_workflow
+name: master_workflow
 
 on:
   push:
