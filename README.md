@@ -55,6 +55,9 @@ dependencies: [
 
 We have provided one sample project in the repository. To use it clone the repo, Source files for these are in the `iOS-Example` directory in project navigator. Have fun!
 
+![ex](https://github.com/divar-ir/DarkRoom/blob/add-example-gif/resources/example1.gif)
+![ex](https://github.com/divar-ir/DarkRoom/blob/add-example-gif/resources/example2.gif)
+
 ## Usage
 
 The Main Component is ``DarkRoomCarouselViewController`` which you can use and provide it with datasource to show images or play videos.
