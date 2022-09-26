@@ -55,8 +55,8 @@ dependencies: [
 
 We have provided one sample project in the repository. To use it clone the repo, Source files for these are in the `iOS-Example` directory in project navigator. Have fun!
 
-![ex](https://github.com/divar-ir/DarkRoom/blob/add-example-gif/resources/example1.gif)
-![ex](https://github.com/divar-ir/DarkRoom/blob/add-example-gif/resources/example2.gif)
+![ex](https://github.com/divar-ir/DarkRoom/blob/master/resources/example1.gif)
+![ex](https://github.com/divar-ir/DarkRoom/blob/master/resources/example2.gif)
 
 ## Usage
 
