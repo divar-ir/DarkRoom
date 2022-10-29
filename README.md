@@ -25,10 +25,9 @@ Elegant Media Viewer Written In Swift.
 - [x] Play Video With Custom Control Configuration.
 - [x] Support Custom Configuration For Almost Each Component.
 - [x] Support HLS And Local Videos.
-- [x] Documented By DocC **[Link To Documents](https://divar-ir.github.io/DarkRoom/documentation/darkroom)**.
+- [x] Documented By DocC **[Link To Documentation](https://divar-ir.github.io/DarkRoom/documentation/darkroom)**.
+- [x] Support `CocoaPods` and `SPM`.
 - [ ] Support `AVAssetResourceLoaderDelegate`.
-- [ ] Support `CocoaPods`(soon)
-- [ ] Support `Carthage`
 
 
 ## Requirements
@@ -36,6 +35,7 @@ Elegant Media Viewer Written In Swift.
 | Platform | Minimum Swift Version | Minimum Swift Tools Version | Installation | Status |
 | --- | --- | --- | --- | --- |
 | iOS 13.0+ | 5.0 | 5.5 | [SPM](#SwiftPackageManager) | Tested |
+| iOS 13.0+ | 5.0 | 5.5 | [CocoaPods](#CocoaPods) | Tested |
 
 ## Installation
 
@@ -49,6 +49,14 @@ Once you have your Swift package set up, adding `DarkRoom` as a dependency is as
 dependencies: [
     .package(url: "https://github.com/divar-ir/DarkRoom.git", .upToNextMajor(from: "1.0.0"))
 ]
+```
+
+### CocoaPods
+
+[CocoaPods](https://cocoapods.org) is a dependency manager for Cocoa projects. For usage and installation instructions, visit their website. To integrate DarkRoom into your Xcode project using CocoaPods, specify it in your `Podfile`:
+
+```ruby
+pod 'DarkRoom'
 ```
 
 ## Sample
