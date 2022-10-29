@@ -25,10 +25,9 @@ Elegant Media Viewer Written In Swift.
 - [x] Play Video With Custom Control Configuration.
 - [x] Support Custom Configuration For Almost Each Component.
 - [x] Support HLS And Local Videos.
-- [x] Documented By DocC **[Link To Documents](https://divar-ir.github.io/DarkRoom/documentation/darkroom)**.
+- [x] Documented By DocC **[Link To Documentation](https://divar-ir.github.io/DarkRoom/documentation/darkroom)**.
+- [x] Support `CocoaPods` and `SPM`.
 - [ ] Support `AVAssetResourceLoaderDelegate`.
-- [ ] Support `CocoaPods`(soon)
-- [ ] Support `Carthage`
 
 
 ## Requirements
