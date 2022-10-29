@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
                    DESC
 
   s.homepage     = "https://github.com/divar-ir/DarkRoom"
-  s.screenshots  = "https://github.com/divar-ir/DarkRoom/blob/master/Sources/DarkRoom/DarkRoom.docc/Resources/DarkRoomLogo.png"
+  s.screenshots  = "https://raw.githubusercontent.com/divar-ir/DarkRoom/master/Sources/DarkRoom/DarkRoom.docc/Resources/DarkRoomLogo.png"
 
   s.license      = { :type => "MIT", :file => "LICENSE" }
 
