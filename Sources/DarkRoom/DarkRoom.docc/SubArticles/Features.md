@@ -10,9 +10,8 @@ All previous and new features are listed here. Community can also add new featur
 - Support Custom Configuration For Almost Each Component.
 - Support HLS And Local Videos.
 - Documented By DocC.
+- Support CocoaPods and SPM
 
 ### Pending Features
 
 - Support `AVAssetResourceLoaderDelegate`.
-- Support `CocoaPods`
-- Support `Carthage`

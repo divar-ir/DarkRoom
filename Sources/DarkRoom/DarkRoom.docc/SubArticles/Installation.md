@@ -22,6 +22,15 @@ dependencies: [
 
 ### CocoaPods
 
+[CocoaPods](https://cocoapods.org) is a dependency manager for Cocoa projects. For usage and installation instructions, visit their website. To integrate DarkRoom into your Xcode project using CocoaPods, specify it in your `Podfile`:
+
+```ruby
+pod 'DarkRoom'
+```
+
+
+### CocoaPods
+
 Not Supported Yet
 
 ### Carthage
