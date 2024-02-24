@@ -71,7 +71,17 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
     private var dismissPropertyAnimator: UIViewPropertyAnimator!
     
     private var controlViewBottomLayout: NSLayoutConstraint!
-    
+
+    private var stateBeforePan: DarkRoomPlayerStates?
+
+    private var lastLocation: CGPoint
+
+    private var panningViews: [UIView] {
+        view.subviews.filter {
+            $0 !== controlView && $0 !== gradientView
+        }
+    }
+
     // MARK: - DataSources
     
     private var isShowingControls: Bool {
@@ -145,6 +155,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         self.videoContentMode = .resizeAspect
         self.isFirstLoad = true
         self.isViewOnScreen = false
+        self.lastLocation = .zero
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -195,7 +206,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
     // MARK: - Prepare Views
 
     private func prepareView() {
-        view.backgroundColor = .black
+        view.backgroundColor = .clear
     }
 
     func setGradientView(){
@@ -507,7 +518,10 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         dismissPropertyAnimator = UIViewPropertyAnimator(duration: 0.5, curve: .easeInOut) {
             self.videoImageView.alpha = 1
             self.videoImageOverlayView.alpha = 1
-            self.videoView.alpha = 0
+            self.videoView.alpha = 1
+            self.backgroundView?.alpha = 0
+            self.controlView.alpha = 0
+            self.gradientView.alpha = 0
         }
     }
     
@@ -544,41 +558,54 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         guard isAnimating == false else { return }
 
         if gestureRecognizer.state == .began {
+            stateBeforePan = player.state
             player.pause()
             panGestureStartPoint = gestureRecognizer.translation(in: view)
-            prepareImageViewsForDismssAnimation()
+            lastLocation = view.center
             prepareDismissPropertyAnimator()
         }
 
         if gestureRecognizer.state == .cancelled {
+            panningViews.forEach {
+                $0.center = lastLocation
+            }
+            panGestureStartPoint = .zero
             dismissPropertyAnimator.stopAnimation(false)
             dismissPropertyAnimator.finishAnimation(at: .start)
         }
 
         let translationInView: CGPoint = gestureRecognizer.translation(in: view)
-        let diffY = panGestureStartPoint.y - translationInView.y
+        panningViews.forEach {
+            $0.center = .init(
+                x: lastLocation.x + translationInView.x,
+                y: lastLocation.y + translationInView.y
+            )
+        }
 
         dismissPropertyAnimator.fractionComplete = calculateDismissAnimatorFraction(from: panGestureStartPoint, current: translationInView)
-        
-        backgroundView?.alpha = 1.0 - abs(diffY/view.center.y)
-        if gestureRecognizer.state == .ended {
 
+        if gestureRecognizer.state == .ended {
             if dismissPropertyAnimator.fractionComplete == 1 {
+                self.player.pause()
                 self.dismiss(animated: true)
             } else {
+                panningViews.forEach {
+                    $0.center = lastLocation
+                }
+                panGestureStartPoint = .zero
                 dismissPropertyAnimator.stopAnimation(false)
                 dismissPropertyAnimator.finishAnimation(at: .start)
                 executeCancelAnimation()
             }
         }
     }
-    
+
     internal func gestureRecognizerShouldBegin( _ gestureRecognizer: UIGestureRecognizer) -> Bool {
         guard let panGesture = gestureRecognizer as? UIPanGestureRecognizer else { return false }
         let velocity = panGesture.velocity(in: videoView)
         return abs(velocity.y) > abs(velocity.x)
     }
-    
+
     private func executeCancelAnimation() {
         self.isAnimating = true
         UIView.animate(
@@ -589,7 +616,10 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             }
         ) { [weak self] _ in
             guard let strongSelf = self else { return }
-            strongSelf.player.play()
+            if strongSelf.stateBeforePan != .paused {
+                strongSelf.player.play()
+            }
+            strongSelf.stateBeforePan = nil
             strongSelf.isAnimating = false
         }
     }
