@@ -31,50 +31,54 @@ import Combine
 // MARK: - Implementation
 
 internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMediaController, UIGestureRecognizerDelegate {
-    
+
     // MARK: - Transition Views
-    
+
     // This image view is used when the transition is about to be performed
     internal var imageView: UIImageView { videoImageView }
-    
+
     internal var imageOverlayView: UIImageView? { videoImageOverlayView }
-    
+
     private var backgroundView: UIView? {
         guard let parent = parent as? DarkRoomCarouselViewController else { return nil }
         return parent.backgroundView
     }
-    
+
     private var navBar: UINavigationBar? {
         guard let parent = parent as? DarkRoomCarouselViewController else { return nil }
         return parent.navBar
     }
-    
+
     // MARK: - Views
-    
+
     private lazy var loadingView: DarkRoomLoadingView = {
         let config = configuration.loadingViewConfiguration
         let view = DarkRoomLoadingView(colors: config.loadingViewColors, lineWidth: 10)
         view.backgroundColor = config.loadingViewBackgroundColor
         return view
     }()
-    
+
     private lazy var videoView: DarkRoomPlayerView = DarkRoomPlayerView()
-    
+
     private lazy var controlView: DarkRoomPlayerControlView = DarkRoomPlayerControlView(configuration: configuration.controlViewConfiguration)
-    
+
     private lazy var videoImageView: UIImageView = UIImageView()
-    
+
     private lazy var videoImageOverlayView: UIImageView = UIImageView()
-    
+
     private lazy var gradientView: UIView = UIView()
-    
+
     private var dismissPropertyAnimator: UIViewPropertyAnimator!
-    
+
     private var controlViewBottomLayout: NSLayoutConstraint!
 
     private var stateBeforePan: DarkRoomPlayerStates?
 
     private var lastLocation: CGPoint
+
+    private var volumeObservation: NSKeyValueObservation?
+
+    private var savedAudioCategory: AVAudioSession.Category?
 
     private var panningViews: [UIView] {
         view.subviews.filter {
@@ -83,35 +87,39 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
     }
 
     // MARK: - DataSources
-    
+
     private var isShowingControls: Bool {
         didSet {
             guard oldValue != isShowingControls else { return }
             changeControlsVisibilty(with: oldValue)
         }
     }
-    
+
     private var panGestureStartPoint: CGPoint
-    
+
     private var isAnimating: Bool
-    
+
     internal var showsPlaybackControls: Bool {
         didSet {
             self.controlView.isHidden = showsPlaybackControls
         }
     }
-    
+
     internal var videoContentMode: AVLayerVideoGravity {
         didSet {
             guard let playerLayer = videoView.layer as? AVPlayerLayer else { return }
             playerLayer.videoGravity = videoContentMode
         }
     }
-    
+
     private var cancelables: Set<AnyCancellable> = Set<AnyCancellable>()
-    
+
+    private var playSoundInSilentModeWithVolumeUp: Bool {
+        configuration.playSoundInSilentModeWithVolumeUp
+    }
+
     // MARK: - Inputs
-    
+
     internal let index: Int
 
     private let player: DarkRoomPlayerExposable
@@ -119,17 +127,17 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
     private let imageLoader: DarkRoomImageLoader
 
     private let imagePlaceholder: UIImage?
-    
+
     private let videoImageOverlayURL: URL?
 
     private let videoImageURL: URL?
-    
+
     private var isFirstLoad: Bool
-    
+
     private var configuration: DarkRoomVideoPlayerControllerConfiguration
-    
+
     private var isViewOnScreen: Bool
-    
+
     // MARK: - LifeCycle
 
     internal init(
@@ -158,15 +166,19 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         self.lastLocation = .zero
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     internal required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     deinit {
         player.pause()
+        if playSoundInSilentModeWithVolumeUp {
+            try? AVAudioSession.sharedInstance().setCategory(.soloAmbient)
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
     }
-    
+
     internal override func viewDidLoad() {
         super.viewDidLoad()
         prepareView()
@@ -178,6 +190,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         prepareActivityIndicator()
         setupBindigs()
         addGestureRecognizers()
+        prepareVolumeObservation()
         view.bringSubviewToFront(controlView)
         if configuration.isBottomShadowEnabled { setGradientView() }
     }
@@ -186,14 +199,24 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         super.viewWillDisappear(animated)
         self.isViewOnScreen = false
         if !isFirstLoad && player.state != .waitingForNetwork && player.state != .failed { player.pause() }
+        if playSoundInSilentModeWithVolumeUp {
+            try? AVAudioSession.sharedInstance().setCategory(.soloAmbient)
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
     }
-    
+
     internal override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.isViewOnScreen = true
         if !isFirstLoad && player.state != .waitingForNetwork && player.state != .failed { player.play() }
+        if playSoundInSilentModeWithVolumeUp {
+            if let savedAudioCategory {
+                try? AVAudioSession.sharedInstance().setCategory(savedAudioCategory)
+            }
+            try? AVAudioSession.sharedInstance().setActive(true)
+        }
     }
-    
+
     internal override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         if isFirstLoad {
@@ -209,7 +232,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         view.backgroundColor = .clear
     }
 
-    func setGradientView(){
+    func setGradientView() {
         view.addSubview(gradientView)
         gradientView.isUserInteractionEnabled = false
         gradientView.translatesAutoresizingMaskIntoConstraints = false
@@ -230,7 +253,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         gradientLayer.startPoint = CGPoint(x: 0.5, y: 1.0)
         gradientLayer.endPoint = CGPoint(x: 0.5, y: 0.0)
         gradientLayer.locations = [0, 1]
-        
+
         let bound = CGRect(
             origin: CGPoint(
                 x: 0,
@@ -246,6 +269,20 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         view.bringSubviewToFront(gradientView)
     }
 
+    private func prepareVolumeObservation() {
+        guard playSoundInSilentModeWithVolumeUp else { return }
+        volumeObservation?.invalidate()
+        volumeObservation = AVAudioSession.sharedInstance().observe(\.outputVolume, options: [.new, .old]) { [weak self] session, change in
+            guard let newValue = change.newValue, let oldValue = change.oldValue else { return }
+            if session.category == .playback { return }
+            if newValue > oldValue {
+                try? session.setCategory(.playback)
+                try? session.setActive(true)
+            }
+            self?.savedAudioCategory = session.category
+        }
+    }
+
     private func prepareImages() {
         if let videoImageURL = videoImageURL {
             imageLoader.loadImage(videoImageURL, placeholder: self.imagePlaceholder, imageView: videoImageView) { [weak self] image in
@@ -259,7 +296,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         videoImageOverlayView.contentMode = .scaleAspectFit
         videoImageOverlayView.translatesAutoresizingMaskIntoConstraints = false
         videoImageView.addSubview(videoImageOverlayView)
-        
+
         NSLayoutConstraint.activate([
             videoImageOverlayView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             videoImageOverlayView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
@@ -267,12 +304,12 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             videoImageOverlayView.heightAnchor.constraint(equalTo: videoImageOverlayView.widthAnchor),
         ])
     }
-    
+
     private func prepareImageView() {
         videoImageView.contentMode = .scaleAspectFit
         videoImageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(videoImageView)
-        
+
         NSLayoutConstraint.activate([
             videoImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             videoImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -280,7 +317,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             videoImageView.topAnchor.constraint(equalTo: view.topAnchor),
         ])
     }
-    
+
     private func prepareControlView() {
         controlView.translatesAutoresizingMaskIntoConstraints = false
         controlView.isHidden = !showsPlaybackControls
@@ -294,7 +331,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             controlView.heightAnchor.constraint(equalToConstant: 80)
         ])
     }
-    
+
     private func prepareActivityIndicator() {
         self.loadingView.isHidden = false
         self.loadingView.backgroundColor = configuration.loadingViewConfiguration.loadingViewBackgroundColor
@@ -308,25 +345,25 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             self.loadingView.heightAnchor.constraint(equalToConstant: 60),
         ])
     }
-    
+
     private func prepareVideoView() {
         videoView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(videoView)
-        
+
         NSLayoutConstraint.activate([
             videoView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             videoView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             videoView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             videoView.topAnchor.constraint(equalTo: view.topAnchor),
         ])
-        
+
         guard let videoLayer = videoView.layer as? AVPlayerLayer else { return }
         videoLayer.videoGravity = self.videoContentMode
         videoLayer.player = player.player
     }
-    
+
     // MARK: - Bindings
-    
+
     private func setupBindigs() {
 
         player.didItemPlayToEndTime
@@ -343,18 +380,18 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
 
         player.stateDidChange
             .receiveOnMainQueue()
-            .filter { state in state == .playing || state == .buffering  }
+            .filter { state in state == .playing || state == .buffering }
             .map { _ in self.configuration.controlViewConfiguration.pauseImage }
             .assign(to: \.buttonImage, on: self.controlView)
             .store(in: &self.cancelables)
-        
+
         player.stateDidChange
             .receiveOnMainQueue()
             .filter { state in state != .playing && state != .buffering }
             .map { _ in self.configuration.controlViewConfiguration.playImage }
             .assign(to: \.buttonImage, on: self.controlView)
             .store(in: &self.cancelables)
-        
+
         player.stateDidChange
             .receiveOnMainQueue()
             .filter { state in state == .playing }
@@ -363,7 +400,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
                 guard let strongSelf = self else { return }
                 strongSelf.player.pause()
                 strongSelf.videoImageOverlayView.isHidden = true
-                
+
                 UIView.animate(
                     withDuration: 0.20,
                     delay: 0,
@@ -386,7 +423,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
                 }
             }
             .store(in: &self.cancelables)
-        
+
         player.stateDidChange
             .receiveOnMainQueue()
             .filter { $0 != .buffering && $0 != .playing && $0 != .paused && $0 != .stopped && self.loadingView.superview == nil }
@@ -397,7 +434,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
                 strongSelf.loadingView.animateRotation()
             }
             .store(in: &self.cancelables)
-        
+
         player.stateDidChange
             .receiveOnMainQueue()
             .filter { $0 == .buffering && self.loadingView.superview == nil && self.player.bufferDuration < 5 }
@@ -409,7 +446,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
                 strongSelf.loadingView.animateRotation()
             }
             .store(in: &self.cancelables)
-        
+
         player.stateDidChange
             .receiveOnMainQueue()
             .filter { $0 == .playing && self.loadingView.superview != nil  }
@@ -420,7 +457,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
                 strongSelf.loadingView.removeAnimations()
             }
             .store(in: &self.cancelables)
-        
+
         player.currentTimeDidChange
             .receiveOnMainQueue()
             .drop { _ in !self.isShowingControls }
@@ -442,7 +479,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             .drop { _ in self.controlView.slider.isOnSliding || !self.isShowingControls }
             .assign(to: \.secondaryProgressValue, on: self.controlView.slider)
             .store(in: &self.cancelables)
-        
+
         controlView.didPlayPauseButtonDidTouchUpInside
             .receiveOnMainQueue()
             .map { _ in self.player.isPlaying }
@@ -452,7 +489,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
                 else { strongSelf.player.play() }
             }
             .store(in: &self.cancelables)
-        
+
         controlView
             .slider
             .sliderDidStartTrackingChanges
@@ -463,7 +500,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
                 strongSelf.player.pause()
             }
             .store(in: &self.cancelables)
-        
+
         player.stateDidChange
             .map { $0 == .waitingForNetwork || $0 == .failed ? false : true }
             .assign(to: \.isSlidingEnabled, on: controlView)
@@ -471,9 +508,9 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
 
         player.stateDidChange
             .map { $0 == .waitingForNetwork || $0 == .failed ? true : false }
-            .sink { self.controlView.updateView(shouldRepresentError:  $0) }
+            .sink { self.controlView.updateView(shouldRepresentError: $0) }
             .store(in: &self.cancelables)
-        
+
         controlView
             .slider
             .sliderDidEndTrackingChanges
@@ -487,15 +524,15 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             }
             .store(in: &self.cancelables)
     }
-    
+
     private func getTimeString(seconds: Int) -> String {
         String(format: "%02d:%02d", seconds / 60, seconds % 60)
     }
-    
+
     internal func prepareForDismiss() {}
-    
+
     // MARK: Gesture Recognizers
-    
+
     private func addGestureRecognizers() {
         let panGesture = UIPanGestureRecognizer(
             target: self,
@@ -513,7 +550,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         singleTapGesture.numberOfTouchesRequired = 1
         videoView.addGestureRecognizer(singleTapGesture)
     }
-    
+
     private func prepareDismissPropertyAnimator() {
         dismissPropertyAnimator = UIViewPropertyAnimator(duration: 0.5, curve: .easeInOut) {
             self.videoImageView.alpha = 1
@@ -524,12 +561,12 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             self.gradientView.alpha = 0
         }
     }
-    
+
     @objc
     private func didSingleTap(_ recognizer: UITapGestureRecognizer) {
         self.isShowingControls.toggle()
     }
-    
+
     private func changeControlsVisibilty(with isShowingControls: Bool) {
         UIView.animate(withDuration: 0.235, delay: 0, options: [.curveEaseInOut]) { [weak self] in
             guard let strongSelf = self else { return }
@@ -538,13 +575,13 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
             strongSelf.navBar?.alpha = isShowingControls ? 0.0 : 1.0
         }
     }
-    
+
     private func calculateDismissAnimatorFraction(from startPoint: CGPoint, current point: CGPoint) -> CGFloat {
         let panAmunt = configuration.dismissPanAmount
         let diffY = startPoint.y - point.y
-        return CGFloat(abs(diffY/panAmunt) <= 1 ? abs(diffY/70) : 1)
+        return CGFloat(abs(diffY / panAmunt) <= 1 ? abs(diffY / 70) : 1)
     }
-    
+
     private func prepareImageViewsForDismssAnimation() {
         /// views become hidden when we perform transition
         self.videoImageOverlayView.isHidden = false
@@ -552,7 +589,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         self.view.bringSubviewToFront(self.videoImageView)
         self.videoImageView.bringSubviewToFront(self.videoImageOverlayView)
     }
-    
+
     @objc
     private func didPan(_ gestureRecognizer: UIPanGestureRecognizer) {
         guard isAnimating == false else { return }
@@ -600,7 +637,7 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
         }
     }
 
-    internal func gestureRecognizerShouldBegin( _ gestureRecognizer: UIGestureRecognizer) -> Bool {
+    internal func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         guard let panGesture = gestureRecognizer as? UIPanGestureRecognizer else { return false }
         let velocity = panGesture.velocity(in: videoView)
         return abs(velocity.y) > abs(velocity.x)
