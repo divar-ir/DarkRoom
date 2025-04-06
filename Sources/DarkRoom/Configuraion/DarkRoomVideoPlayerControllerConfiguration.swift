@@ -1,6 +1,6 @@
 //
 //  DarkRoomVideoPlayerControllerConfiguration.swift
-//  
+//
 //
 //  Created by Kiarash Vosough on 8/2/22.
 //
@@ -29,43 +29,48 @@ import UIKit
 // MARK: - Abstraction
 
 public protocol DarkRoomVideoPlayerControllerConfiguration {
-    
+
     var loadingViewConfiguration: DarkRoomLoadingViewConfiguration { get }
-    
+
     var controlViewConfiguration: DarkRoomControlViewConfiguration { get }
-    
+
     var videoPlayerBackgroudColor: UIColor { get }
-    
+
     var showsPlaybackControls: Bool { get }
-    
+
     var videoContentMode: UIView.ContentMode { get }
-    
+
     /// Amount of pan needed to dismiss the carousel.
     /// The difference is calculated by subtracting start and the end point of pan gesture.
     var dismissPanAmount: CGFloat { get }
-    
+
     /// A smooth shadow will applied to bottom of videoPlayer with the height of 200 if set to be true
     var isBottomShadowEnabled: Bool { get }
+
+    /// Plays the sound of video in silent mode if volume turns up.
+    var playSoundInSilentModeWithVolumeUp: Bool { get }
 }
 
 // MARK: - Implementation
 
 public struct DarkRoomVideoPlayerControllerDefaultConfiguration: DarkRoomVideoPlayerControllerConfiguration {
- 
+
     public var loadingViewConfiguration: DarkRoomLoadingViewConfiguration
-    
+
     public var controlViewConfiguration: DarkRoomControlViewConfiguration
-    
+
     public var videoPlayerBackgroudColor: UIColor
-    
+
     public var showsPlaybackControls: Bool
-    
+
     public var videoContentMode: UIView.ContentMode
-    
+
     public var dismissPanAmount: CGFloat
-    
+
     public var isBottomShadowEnabled: Bool
-    
+
+    public var playSoundInSilentModeWithVolumeUp: Bool
+
     public init(
         loadingViewConfiguration: DarkRoomLoadingViewConfiguration = DarkRoomLoadingViewDefaultConfiguration(),
         controlViewConfiguration: DarkRoomControlViewConfiguration = DarkRoomControlViewDefaultConfiguration(),
@@ -73,7 +78,8 @@ public struct DarkRoomVideoPlayerControllerDefaultConfiguration: DarkRoomVideoPl
         showsPlaybackControls: Bool = true,
         videoContentMode: UIView.ContentMode = .scaleAspectFit,
         dismissPanAmount: CGFloat = 70,
-        isBottomShadowEnabled: Bool = true
+        isBottomShadowEnabled: Bool = true,
+        playSoundInSilentModeWithVolumeUp: Bool = false
     ) {
         self.loadingViewConfiguration = loadingViewConfiguration
         self.controlViewConfiguration = controlViewConfiguration
@@ -82,5 +88,6 @@ public struct DarkRoomVideoPlayerControllerDefaultConfiguration: DarkRoomVideoPl
         self.videoContentMode = videoContentMode
         self.dismissPanAmount = dismissPanAmount
         self.isBottomShadowEnabled = isBottomShadowEnabled
+        self.playSoundInSilentModeWithVolumeUp = playSoundInSilentModeWithVolumeUp
     }
 }
