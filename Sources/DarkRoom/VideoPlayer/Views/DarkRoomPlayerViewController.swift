@@ -230,6 +230,21 @@ internal final class DarkRoomPlayerViewController: UIViewController, DarkRoomMed
 
     private func prepareView() {
         view.backgroundColor = .clear
+        isAccessibilityElement = true
+        accessibilityTraits = .startsMediaSession
+        shouldGroupAccessibilityChildren = true
+        accessibilityTraits.insert(.allowsDirectInteraction)
+        imageView.isAccessibilityElement = true
+    }
+
+    override func accessibilityActivate() -> Bool {
+        if player.isPlaying {
+            player.pause()
+        }
+        else {
+            player.play()
+        }
+        return true
     }
 
     func setGradientView() {
