@@ -73,7 +73,9 @@ internal final class DarkRoomImageViewerController: UIViewController, UIGestureR
     private let imageLoader: DarkRoomImageLoader
     
     private var configuration: DarkRoomImageControllerConfiguration
-    
+
+    private let shouldLayoutImageViewInViewDidLoad: Bool
+
     // MARK: - LifeCycle
 
     internal init(
@@ -81,7 +83,8 @@ internal final class DarkRoomImageViewerController: UIViewController, UIGestureR
         imageURL: URL,
         imagePlaceholder: UIImage,
         imageLoader: DarkRoomImageLoader,
-        configuration: DarkRoomImageControllerConfiguration = DarkRoomImageControllerDeafultConfiguration()
+        configuration: DarkRoomImageControllerConfiguration = DarkRoomImageControllerDeafultConfiguration(),
+        shouldLayoutImageViewInViewDidLoad: Bool
     ) {
         self.index = index
         self.imageURL = imageURL
@@ -91,6 +94,7 @@ internal final class DarkRoomImageViewerController: UIViewController, UIGestureR
         self.lastLocation = .zero
         self.isAnimating = false
         self.maxZoomScale = 1.0
+        self.shouldLayoutImageViewInViewDidLoad = shouldLayoutImageViewInViewDidLoad
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -138,6 +142,9 @@ internal final class DarkRoomImageViewerController: UIViewController, UIGestureR
 
     internal override func viewDidLoad() {
         super.viewDidLoad()
+        if shouldLayoutImageViewInViewDidLoad {
+            layout()
+        }
         loadImage()
         addGestureRecognizers()
     }
@@ -337,4 +344,3 @@ extension DarkRoomImageViewerController: UIScrollViewDelegate {
         updateConstraintsForSize(view.bounds.size)
     }
 }
-

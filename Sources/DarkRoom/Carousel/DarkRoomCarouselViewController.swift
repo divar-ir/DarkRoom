@@ -29,6 +29,8 @@ import UIKit
 /// A PageController class which is able to show image or video
 public final class DarkRoomCarouselViewController: UIPageViewController {
 
+    private let shouldLayoutImageViewInViewDidLoad: Bool
+
     // MARK: - Dependencies
 
     /// Loading service for images
@@ -97,7 +99,8 @@ public final class DarkRoomCarouselViewController: UIPageViewController {
         imageDelegate: DarkRoomCarouselDelegate? = nil,
         imageLoader: DarkRoomImageLoader,
         initialIndex: Int = 0,
-        configuration: DarkRoomCarouselConfiguration = DarkRoomCarouselDefaultConfiguration()
+        configuration: DarkRoomCarouselConfiguration = DarkRoomCarouselDefaultConfiguration(),
+        shouldLayoutImageViewInViewDidLoad: Bool = false
     ) {
         self.initialIndex = initialIndex
         self.displayedIndex = initialIndex
@@ -105,6 +108,7 @@ public final class DarkRoomCarouselViewController: UIPageViewController {
         self.mediaDelegate = imageDelegate
         self.imageLoader = imageLoader
         self.configuration = configuration
+        self.shouldLayoutImageViewInViewDidLoad = shouldLayoutImageViewInViewDidLoad
         let pageOptions = [UIPageViewController.OptionsKey.interPageSpacing: 20]
 
         super.init(
@@ -271,7 +275,8 @@ extension DarkRoomCarouselViewController: UIPageViewControllerDataSource {
             index: index,
             imageURL: data.imageUrl,
             imagePlaceholder: data.imagePlaceholder,
-            imageLoader: imageLoader
+            imageLoader: imageLoader,
+            shouldLayoutImageViewInViewDidLoad: shouldLayoutImageViewInViewDidLoad
         )
     }
     
@@ -337,4 +342,3 @@ extension DarkRoomCarouselViewController: DarkRoomTransitionViewControllerConver
         return vc.imageOverlayView
     }
 }
-
