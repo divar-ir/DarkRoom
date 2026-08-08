@@ -54,6 +54,8 @@ internal final class DarkRoomLoadingMediaState: DarkRoomPlayerState {
     private var itemStatusObserving: DarkRoomPlayerItemStatusObservingService?
     
     private let itemInitService: DarkRoomPlayerItemInitService
+
+    private var mediaLoadID: UUID?
     
     private let isRevivedFromNetworkWaiting: Bool
     
@@ -134,6 +136,7 @@ internal final class DarkRoomLoadingMediaState: DarkRoomPlayerState {
     // MARK: - Private actions
     
     private func cancelMediaLoading() {
+        mediaLoadID = nil
         context.currentItem?.asset.cancelLoading()
         context.currentItem?.cancelPendingSeeks()
         context.player.replaceCurrentItem(with: nil)
@@ -145,16 +148,30 @@ internal final class DarkRoomLoadingMediaState: DarkRoomPlayerState {
             startObservingItemStatus(item: item)
             context.startObservingBuffer(for: item)
         } else {
-            let item = itemInitService.getItem(
+            let mediaLoadID = UUID()
+            self.mediaLoadID = mediaLoadID
+            itemInitService.getItem(
                 media: media,
                 assetResourceLoaderDelegate: context.canUseAssetResourceLoader ? context as? AVAssetResourceLoaderDelegate : nil,
                 loadedAssetKeys: context.config.itemLoadedAssetKeys
-            )
-            
-            startObservingItemStatus(item: item)
-            context.player.replaceCurrentItem(with: item)
-            context.startObservingBuffer(for: item)
+            ) { [weak self] item in
+                guard let self = self, self.mediaLoadID == mediaLoadID else {
+                    item.asset.cancelLoading()
+                    return
+                }
+                self.mediaLoadID = nil
+                self.startObservingItemStatus(item: item)
+                self.context.player.replaceCurrentItem(with: item)
+                self.context.startObservingBuffer(for: item)
+                self.notifyCurrentTimeIfNeeded()
+            }
+            return
         }
+
+        notifyCurrentTimeIfNeeded()
+    }
+
+    private func notifyCurrentTimeIfNeeded() {
         guard position == nil else { return }
         context.delegate?.playerContext(didCurrentTimeChange: context.currentTime)
     }
