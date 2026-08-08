@@ -36,6 +36,26 @@ public protocol DarkRoomPlayerItemInitService {
     ) -> AVPlayerItem
 }
 
+public extension DarkRoomPlayerItemInitService {
+    func getItem(
+        media: DarkRoomPlayerMedia,
+        assetResourceLoaderDelegate: AVAssetResourceLoaderDelegate?,
+        loadedAssetKeys: [String],
+        completion: @escaping (AVPlayerItem) -> Void
+    ) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let item = self.getItem(
+                media: media,
+                assetResourceLoaderDelegate: assetResourceLoaderDelegate,
+                loadedAssetKeys: loadedAssetKeys
+            )
+            DispatchQueue.main.async {
+                completion(item)
+            }
+        }
+    }
+}
+
 // MARK: - Implementation
 
 internal struct DarkRoomPlayerItemInitServiceImpl: DarkRoomPlayerItemInitService {
